@@ -1,5 +1,7 @@
 ---
 galaxy_info:
+  role_name: adguard_home
+  namespace: homelab
   author: Homelab Admin
   description: Install and configure AdGuard Home DNS server
   company: Homelab
