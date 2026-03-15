@@ -1,0 +1,53 @@
+---
+argument_specs:
+  main:
+    short_description: Install and configure AdGuard Home DNS server
+    options:
+      adguard_home_version:
+        type: str
+        default: "v0.107.54"
+        description: AdGuard Home version to install.
+
+      adguard_home_install_dir:
+        type: path
+        default: /opt/AdGuardHome
+        description: Directory for the AdGuard Home binary.
+
+      adguard_home_work_dir:
+        type: path
+        default: /var/lib/AdGuardHome
+        description: Working directory for AdGuard Home data.
+
+      adguard_home_config_dir:
+        type: path
+        default: /etc/AdGuardHome
+        description: Directory for AdGuard Home configuration.
+
+      adguard_home_user:
+        type: str
+        default: adguardhome
+        description: System user to run AdGuard Home.
+
+      adguard_home_group:
+        type: str
+        default: adguardhome
+        description: System group for AdGuard Home.
+
+      adguard_home_web_port:
+        type: str
+        default: "3000"
+        description: Port for the AdGuard Home web UI.
+
+      adguard_home_dns_port:
+        type: str
+        default: "53"
+        description: Port for DNS resolution.
+
+      adguard_home_firewall_enabled:
+        type: bool
+        default: true
+        description: Whether to configure UFW firewall rules.
+
+      adguard_home_arch_map:
+        type: dict
+        description: Mapping of ansible_architecture values to AdGuard Home architecture names.
