@@ -1,0 +1,9 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+
+  roles:
+    - role: homelab.adguard_home
+      vars:
+        adguard_home_firewall_enabled: false

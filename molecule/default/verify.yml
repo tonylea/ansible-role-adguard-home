@@ -1,0 +1,96 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Verify adguardhome group exists
+      ansible.builtin.group:
+        name: adguardhome
+        state: present
+      check_mode: true
+      register: group_result
+      failed_when: group_result.changed
+
+    - name: Verify adguardhome user exists
+      ansible.builtin.user:
+        name: adguardhome
+        state: present
+      check_mode: true
+      register: user_result
+      failed_when: user_result.changed
+
+    - name: Verify install directory exists
+      ansible.builtin.stat:
+        path: /opt/AdGuardHome
+      register: install_dir
+      failed_when: not install_dir.stat.exists or not install_dir.stat.isdir
+
+    - name: Verify work directory exists
+      ansible.builtin.stat:
+        path: /var/lib/AdGuardHome
+      register: work_dir
+      failed_when: not work_dir.stat.exists or not work_dir.stat.isdir
+
+    - name: Verify config directory exists
+      ansible.builtin.stat:
+        path: /etc/AdGuardHome
+      register: config_dir
+      failed_when: not config_dir.stat.exists or not config_dir.stat.isdir
+
+    - name: Verify AdGuard Home binary is installed
+      ansible.builtin.stat:
+        path: /opt/AdGuardHome/AdGuardHome
+      register: binary
+      failed_when: not binary.stat.exists or not binary.stat.executable
+
+    - name: Verify binary ownership
+      ansible.builtin.stat:
+        path: /opt/AdGuardHome/AdGuardHome
+      register: binary_stat
+
+    - name: Assert binary is owned by adguardhome
+      ansible.builtin.assert:
+        that:
+          - binary_stat.stat.pw_name == 'adguardhome'
+          - binary_stat.stat.gr_name == 'adguardhome'
+
+    - name: Verify systemd service file exists
+      ansible.builtin.stat:
+        path: /etc/systemd/system/AdGuardHome.service
+      register: service_file
+      failed_when: not service_file.stat.exists
+
+    - name: Verify systemd service file content
+      ansible.builtin.command: grep -c "ExecStart=/opt/AdGuardHome/AdGuardHome" /etc/systemd/system/AdGuardHome.service
+      changed_when: false
+
+    - name: Verify AdGuard Home service is enabled
+      ansible.builtin.systemd:
+        name: AdGuardHome
+        enabled: true
+      check_mode: true
+      register: service_enabled
+      failed_when: service_enabled.changed
+
+    - name: Verify AdGuard Home version output
+      ansible.builtin.command: /opt/AdGuardHome/AdGuardHome --version
+      changed_when: false
+      register: version_output
+
+    - name: Assert version contains expected version string
+      ansible.builtin.assert:
+        that:
+          - "'0.107.54' in version_output.stdout"
+
+    - name: Verify idempotence - run role again
+      ansible.builtin.include_role:
+        name: homelab.adguard_home
+      vars:
+        adguard_home_firewall_enabled: false
+      register: idempotence_result
+
+    - name: Assert no changes on second run (idempotence)
+      ansible.builtin.assert:
+        that:
+          - not idempotence_result.changed

@@ -1,0 +1,14 @@
+---
+- name: Prepare
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - systemd
+          - tar
+          - gzip
+        state: present
+        update_cache: true
