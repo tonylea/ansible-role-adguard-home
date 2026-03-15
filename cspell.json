@@ -1,0 +1,17 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "ignorePaths": [
+    ".claude/",
+    ".github/",
+    "node_modules/"
+  ],
+  "words": [
+    "adguardhome",
+    "armv",
+    "homelab",
+    "lineinfile",
+    "nologin",
+    "trixie"
+  ]
+}
