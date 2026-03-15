@@ -18,4 +18,4 @@ galaxy_info:
 dependencies: []
 
 collections:
-  - name: community.general
+  - community.general

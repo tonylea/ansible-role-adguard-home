@@ -1,0 +1,10 @@
+---
+profile: production
+
+exclude_paths:
+  - .github/
+  - .claude/
+
+skip_list:
+  - galaxy[no-changelog]
+  - role-name
