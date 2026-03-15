@@ -4,6 +4,7 @@ profile: production
 exclude_paths:
   - .github/
   - .claude/
+  - molecule/
 
 skip_list:
   - galaxy[no-changelog]

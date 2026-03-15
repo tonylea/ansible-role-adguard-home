@@ -9,7 +9,11 @@
   "words": [
     "adguardhome",
     "armv",
+    "cgroupns",
+    "geerlingguy",
     "homelab",
+    "idempotence",
+    "isdir",
     "lineinfile",
     "nologin",
     "trixie"

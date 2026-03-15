@@ -8,6 +8,7 @@
     "lint:ansible": "ansible-lint",
     "lint:spell": "cspell \"**/*\"",
     "lint": "npm run lint:yaml && npm run lint:ansible && npm run lint:spell",
+    "test": "molecule test",
     "prepare": "husky"
   },
   "license": "MIT",
