@@ -86,7 +86,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Bump version and tag
-        run: npx commit-and-tag-version
+        run: HUSKY=0 npx commit-and-tag-version
 
       - name: Push changes and tags
         run: git push --follow-tags origin main
