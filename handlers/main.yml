@@ -3,10 +3,12 @@
   ansible.builtin.systemd:
     name: AdGuardHome
     state: restarted
-  listen: Restart AdGuardHome
 
 - name: Restart systemd-resolved
   ansible.builtin.systemd:
     name: systemd-resolved
     state: restarted
-  listen: Restart systemd-resolved
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true

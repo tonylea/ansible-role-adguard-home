@@ -1,0 +1,4 @@
+---
+adguard_home_arch: "{{ adguard_home_arch_map[ansible_architecture] | default('amd64') }}"
+adguard_home_download_url: "https://github.com/AdguardTeam/AdGuardHome/releases/download/{{ adguard_home_version }}/AdGuardHome_linux_{{ adguard_home_arch }}.tar.gz"
+adguard_home_checksum_url: "https://github.com/AdguardTeam/AdGuardHome/releases/download/{{ adguard_home_version }}/checksums.txt"

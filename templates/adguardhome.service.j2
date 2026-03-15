@@ -1,6 +1,7 @@
 [Unit]
 Description=AdGuard Home: Network-level blocker
-After=network.target
+Wants=network-online.target
+After=network-online.target
 ConditionFileIsExecutable={{ adguard_home_install_dir }}/AdGuardHome
 
 [Service]
