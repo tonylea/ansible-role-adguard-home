@@ -1,0 +1,170 @@
+---
+- name: Create AdGuard Home system group
+  ansible.builtin.group:
+    name: "{{ adguard_home_group }}"
+    system: true
+    state: present
+  tags:
+    - adguard-home
+    - adguard-home-install
+
+- name: Create AdGuard Home system user
+  ansible.builtin.user:
+    name: "{{ adguard_home_user }}"
+    group: "{{ adguard_home_group }}"
+    system: true
+    shell: /usr/sbin/nologin
+    home: "{{ adguard_home_work_dir }}"
+    create_home: false
+    state: present
+  tags:
+    - adguard-home
+    - adguard-home-install
+
+- name: Create AdGuard Home directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ adguard_home_user }}"
+    group: "{{ adguard_home_group }}"
+    mode: "0755"
+  loop:
+    - "{{ adguard_home_install_dir }}"
+    - "{{ adguard_home_work_dir }}"
+    - "{{ adguard_home_config_dir }}"
+  tags:
+    - adguard-home
+    - adguard-home-install
+
+- name: Check installed AdGuard Home version
+  ansible.builtin.command: "{{ adguard_home_install_dir }}/AdGuardHome --version"
+  register: adguard_home_installed_version
+  changed_when: false
+  failed_when: false
+  tags:
+    - adguard-home
+    - adguard-home-install
+
+- name: Download AdGuard Home binary
+  ansible.builtin.get_url:
+    url: "{{ adguard_home_download_url }}"
+    dest: "/tmp/adguardhome.tar.gz"
+    mode: "0644"
+  when: adguard_home_version not in adguard_home_installed_version.stdout | default('')
+  tags:
+    - adguard-home
+    - adguard-home-install
+
+- name: Extract AdGuard Home archive
+  ansible.builtin.unarchive:
+    src: /tmp/adguardhome.tar.gz
+    dest: /tmp
+    remote_src: true
+  when: adguard_home_version not in adguard_home_installed_version.stdout | default('')
+  tags:
+    - adguard-home
+    - adguard-home-install
+
+- name: Install AdGuard Home binary
+  ansible.builtin.copy:
+    src: /tmp/AdGuardHome/AdGuardHome
+    dest: "{{ adguard_home_install_dir }}/AdGuardHome"
+    owner: "{{ adguard_home_user }}"
+    group: "{{ adguard_home_group }}"
+    mode: "0755"
+    remote_src: true
+  when: adguard_home_version not in adguard_home_installed_version.stdout | default('')
+  notify: Restart AdGuardHome
+  tags:
+    - adguard-home
+    - adguard-home-install
+
+- name: Clean up temporary files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/adguardhome.tar.gz
+    - /tmp/AdGuardHome
+  when: adguard_home_version not in adguard_home_installed_version.stdout | default('')
+  tags:
+    - adguard-home
+    - adguard-home-install
+
+- name: Check if systemd-resolved config exists
+  ansible.builtin.stat:
+    path: /etc/systemd/resolved.conf
+  register: resolved_conf
+  tags:
+    - adguard-home
+    - adguard-home-config
+
+- name: Disable systemd-resolved stub listener
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/resolved.conf
+    regexp: "^#?DNSStubListener="
+    line: "DNSStubListener=no"
+    state: present
+  when: resolved_conf.stat.exists
+  notify: Restart systemd-resolved
+  tags:
+    - adguard-home
+    - adguard-home-config
+
+- name: Deploy AdGuard Home systemd service
+  ansible.builtin.template:
+    src: adguardhome.service.j2
+    dest: /etc/systemd/system/AdGuardHome.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart AdGuardHome
+  tags:
+    - adguard-home
+    - adguard-home-config
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+  tags:
+    - adguard-home
+    - adguard-home-config
+
+- name: Allow AdGuard Home DNS port (TCP) through UFW
+  community.general.ufw:
+    rule: allow
+    port: "{{ adguard_home_dns_port }}"
+    proto: tcp
+  when: firewall_enabled | default(true) | bool
+  tags:
+    - adguard-home
+    - adguard-home-firewall
+
+- name: Allow AdGuard Home DNS port (UDP) through UFW
+  community.general.ufw:
+    rule: allow
+    port: "{{ adguard_home_dns_port }}"
+    proto: udp
+  when: firewall_enabled | default(true) | bool
+  tags:
+    - adguard-home
+    - adguard-home-firewall
+
+- name: Allow AdGuard Home web UI port through UFW
+  community.general.ufw:
+    rule: allow
+    port: "{{ adguard_home_web_port }}"
+    proto: tcp
+  when: firewall_enabled | default(true) | bool
+  tags:
+    - adguard-home
+    - adguard-home-firewall
+
+- name: Enable and start AdGuard Home service
+  ansible.builtin.systemd:
+    name: AdGuardHome
+    state: started
+    enabled: true
+  tags:
+    - adguard-home
+    - adguard-home-service
