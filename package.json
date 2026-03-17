@@ -1,6 +1,6 @@
 {
   "name": "ansible-role-adguard-home",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Ansible role to install and configure AdGuard Home DNS server",
   "scripts": {
