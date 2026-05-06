@@ -28,10 +28,20 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          KEY_ID=$(gpg --list-secret-keys --keyid-format LONG | grep sec | awk '{print $2}' | cut -d'/' -f2)
+          git config user.signingkey "$KEY_ID"
+          git config commit.gpgsign true
+          git config tag.gpgsign true
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --kill gpg-agent
+
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.email "tonylea@users.noreply.github.com"
 
       - name: Bump version and tag
         run: HUSKY=0 npx commit-and-tag-version
